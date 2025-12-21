@@ -11,7 +11,7 @@ if(isMobile){
     mobileMessage.textContent="⚠️ 此功能僅限行動裝置使用";
 }
 
-/* ====== 即時聊天 + 自動回傳定位（無預設回覆） ====== */
+/* ====== 即時聊天 + 30秒未回覆自動回傳定位 + 倒數進度條 ====== */
 const chatBox = document.getElementById("chat-box");
 const chatForm = document.getElementById("chat-form");
 const chatInput = document.getElementById("chat-input");
@@ -27,6 +27,34 @@ chatForm.addEventListener("submit", e => {
     chatBox.scrollTop = chatBox.scrollHeight;
     chatInput.value="";
 
+    // 建立等待提示與倒數進度條
+    const waitMsg = createMessageElement("", "friend");
+    waitMsg.id = "wait-msg";
+    const waitText = document.createElement("div");
+    waitText.textContent = "⏳ 等待對方回覆中...";
+    const progressBar = document.createElement("div");
+    progressBar.style.height = "5px";
+    progressBar.style.backgroundColor = "#00bfa5";
+    progressBar.style.width = "100%";
+    progressBar.style.borderRadius = "5px";
+    progressBar.style.marginTop = "5px";
+
+    waitMsg.appendChild(waitText);
+    waitMsg.appendChild(progressBar);
+    chatBox.appendChild(waitMsg);
+    chatBox.scrollTop = chatBox.scrollHeight;
+
+    // 更新進度條
+    let duration = 30; // 秒
+    let elapsed = 0;
+    const interval = setInterval(()=>{
+        elapsed++;
+        progressBar.style.width = ((duration - elapsed)/duration*100) + "%";
+        if(elapsed >= duration){
+            clearInterval(interval);
+        }
+    },1000);
+
     // 傳送訊息到伺服器 (模擬)
     fetch("https://jsonplaceholder.typicode.com/posts", {
         method:"POST",
@@ -34,28 +62,32 @@ chatForm.addEventListener("submit", e => {
         body:JSON.stringify({message:text})
     }).catch(err => console.error(err));
 
-    // 5秒未回覆，自動回傳定位
+    // 30秒未回覆，自動回傳定位
     setTimeout(()=>{
-        if(navigator.geolocation){
-            navigator.geolocation.getCurrentPosition(pos => {
-                const {latitude, longitude} = pos;
+        if(document.getElementById("wait-msg")){
+            waitMsg.remove();
 
-                // 傳送位置到伺服器 (模擬)
-                fetch("https://jsonplaceholder.typicode.com/posts",{
-                    method:"POST",
-                    headers:{"Content-Type":"application/json"},
-                    body:JSON.stringify({latitude,longitude})
-                });
+            if(navigator.geolocation){
+                navigator.geolocation.getCurrentPosition(pos => {
+                    const {latitude, longitude} = pos;
 
-                const locMsg = createMessageElement(
-                    `⚡ 對方未回覆，已自動回傳位置: [${latitude.toFixed(5)}, ${longitude.toFixed(5)}]`,
-                    "friend"
-                );
-                chatBox.appendChild(locMsg);
-                chatBox.scrollTop = chatBox.scrollHeight;
-            }, err => console.error("無法取得定位", err));
+                    // 傳送位置到伺服器 (模擬)
+                    fetch("https://jsonplaceholder.typicode.com/posts",{
+                        method:"POST",
+                        headers:{"Content-Type":"application/json"},
+                        body:JSON.stringify({latitude,longitude})
+                    });
+
+                    const locMsg = createMessageElement(
+                        `⚡ 30秒內未回覆，已自動回傳位置: [${latitude.toFixed(5)}, ${longitude.toFixed(5)}]`,
+                        "friend"
+                    );
+                    chatBox.appendChild(locMsg);
+                    chatBox.scrollTop = chatBox.scrollHeight;
+                }, err => console.error("無法取得定位", err));
+            }
         }
-    }, 5000); // 5秒
+    }, 30000); // 30秒
 });
 
 // 建立訊息元素

@@ -1,12 +1,10 @@
-/* 全局 */
 body {
     font-family: "Microsoft JhengHei", sans-serif;
-    background-color: #e0f7fa; /* Tiffany 淡綠/藍色背景 */
+    background-color: #e0f7fa;
     margin: 0;
     padding: 0 20px;
 }
 
-/* 標題區 */
 .hero-section {
     text-align: center;
     margin: 20px 0;
@@ -18,7 +16,6 @@ body {
 .hero-section h1 { margin:0; font-size:2rem; }
 .hero-section p { font-size:1rem; color:#333; }
 
-/* 章節區塊 */
 .section {
     background-color: #ffffffcc;
     padding: 20px;
@@ -27,7 +24,6 @@ body {
     box-shadow: 0 4px 8px rgba(0,0,0,0.1);
 }
 
-/* 行動專屬按鈕 */
 #mobile-btn {
     padding: 10px 20px;
     margin-top: 10px;
@@ -38,10 +34,7 @@ body {
     cursor:pointer;
     transition: all 0.3s ease;
 }
-#mobile-btn:hover {
-    background-color: #008e76;
-    transform: scale(1.05);
-}
+#mobile-btn:hover { background-color: #008e76; transform: scale(1.05); }
 
 /* 聊天系統 */
 #chat-box {
@@ -81,4 +74,20 @@ body {
     position:absolute;
     bottom:-15px;
     right:10px;
+}
+
+/* 倒數進度條 */
+.progress-container {
+    width: 100%;
+    height: 5px;
+    background: #ccc;
+    border-radius: 5px;
+    margin-top: 5px;
+    overflow: hidden;
+}
+.progress-bar {
+    height: 100%;
+    width: 100%;
+    background-color: #00bfa5;
+    transition: width 1s linear;
 }

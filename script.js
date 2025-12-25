@@ -1,103 +1,92 @@
-/* ====== 行動專屬功能 ====== */
-const mobileMessage = document.getElementById("mobile-message");
-const mobileBtn = document.getElementById("mobile-btn");
-const isMobile = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-
-if(isMobile){
-    mobileMessage.textContent = "歡迎使用行動裝置！";
-    mobileBtn.style.display="inline-block";
-    mobileBtn.addEventListener("click", ()=>alert("行動裝置專屬功能啟動🎉"));
-}else{
-    mobileMessage.textContent="⚠️ 此功能僅限行動裝置使用";
-}
-
-/* ====== 即時聊天 + 30秒倒數秒數顯示 + 進度條 + 自動回傳定位 ====== */
+/* ===== 聊天系統 + 30秒倒數定位 ===== */
 const chatBox = document.getElementById("chat-box");
 const chatForm = document.getElementById("chat-form");
 const chatInput = document.getElementById("chat-input");
 
-chatForm.addEventListener("submit", e => {
-    e.preventDefault();
-    const text = chatInput.value.trim();
-    if(!text) return;
+chatForm.addEventListener("submit", e=>{
+  e.preventDefault();
+  const text = chatInput.value.trim();
+  if(!text) return;
 
-    // 顯示使用者訊息
-    const userMsg = createMessageElement(text,"user");
-    chatBox.appendChild(userMsg);
-    chatBox.scrollTop = chatBox.scrollHeight;
-    chatInput.value="";
+  addMsg(text,"user");
+  chatInput.value="";
 
-    // 建立等待提示與倒數條
-    const waitMsg = createMessageElement("", "friend");
-    waitMsg.id="wait-msg";
+  const wait = document.createElement("div");
+  wait.className="message friend";
+  const txt = document.createElement("div");
+  let sec = 30;
+  txt.textContent=`⏳ 等待對方回覆中… ${sec}秒`;
 
-    const waitText = document.createElement("div");
-    let duration = 30; // 秒
-    let remaining = duration;
-    waitText.textContent = `⏳ 等待對方回覆中… ${remaining}秒`;
+  const barWrap=document.createElement("div");
+  barWrap.className="progress-container";
+  const bar=document.createElement("div");
+  bar.className="progress-bar";
+  barWrap.appendChild(bar);
 
-    const progressContainer = document.createElement("div");
-    progressContainer.className="progress-container";
-    const progressBar = document.createElement("div");
-    progressBar.className="progress-bar";
-    progressContainer.appendChild(progressBar);
+  wait.appendChild(txt);
+  wait.appendChild(barWrap);
+  chatBox.appendChild(wait);
+  chatBox.scrollTop=chatBox.scrollHeight;
 
-    waitMsg.appendChild(waitText);
-    waitMsg.appendChild(progressContainer);
-    chatBox.appendChild(waitMsg);
-    chatBox.scrollTop = chatBox.scrollHeight;
+  const timer=setInterval(()=>{
+    sec--;
+    txt.textContent=`⏳ 等待對方回覆中… ${sec}秒`;
+    bar.style.width=(sec/30*100)+"%";
+    if(sec<=0) clearInterval(timer);
+  },1000);
 
-    // 每秒更新倒數文字與進度條
-    const interval = setInterval(()=>{
-        remaining--;
-        if(remaining>=0){
-            waitText.textContent = `⏳ 等待對方回覆中… ${remaining}秒`;
-            progressBar.style.width = (remaining/duration*100) + "%";
-        } else {
-            clearInterval(interval);
-        }
-    },1000);
-
-    // 傳送訊息到伺服器 (模擬)
-    fetch("https://jsonplaceholder.typicode.com/posts", {
-        method:"POST",
-        headers:{"Content-Type":"application/json"},
-        body:JSON.stringify({message:text})
-    }).catch(err => console.error(err));
-
-    // 30秒未回覆，自動回傳定位
-    setTimeout(()=>{
-        if(document.getElementById("wait-msg")){
-            waitMsg.remove(); // 移除等待訊息
-
-            if(navigator.geolocation){
-                navigator.geolocation.getCurrentPosition(pos=>{
-                    const {latitude,longitude}=pos;
-
-                    // 傳送位置到伺服器 (模擬)
-                    fetch("https://jsonplaceholder.typicode.com/posts",{
-                        method:"POST",
-                        headers:{"Content-Type":"application/json"},
-                        body:JSON.stringify({latitude,longitude})
-                    });
-
-                    // 顯示自動回傳定位訊息
-                    const locMsg=createMessageElement(
-                        `⚡ 30秒內未回覆，已自動回傳位置: [${latitude.toFixed(5)}, ${longitude.toFixed(5)}]`,
-                        "friend"
-                    );
-                    chatBox.appendChild(locMsg);
-                    chatBox.scrollTop=chatBox.scrollHeight;
-                }, err=>console.error("無法取得定位", err));
-            }
-        }
-    }, duration*1000); // 30秒
+  setTimeout(()=>{
+    wait.remove();
+    if(navigator.geolocation){
+      navigator.geolocation.getCurrentPosition(pos=>{
+        addMsg(
+          `⚡ 30秒未回覆，已自動回傳定位：${pos.coords.latitude.toFixed(5)}, ${pos.coords.longitude.toFixed(5)}`,
+          "friend"
+        );
+      });
+    }
+  },30000);
 });
 
-// 建立訊息元素
-function createMessageElement(text,type){
-    const msg=document.createElement("div");
-    msg.className=`message ${type}`;
-    msg.textContent=text;
-    return msg;
+function addMsg(text,type){
+  const d=document.createElement("div");
+  d.className=`message ${type}`;
+  d.textContent=text;
+  chatBox.appendChild(d);
+  chatBox.scrollTop=chatBox.scrollHeight;
 }
+
+/* ===== DeviceOrientation 行動感測器 ===== */
+const sensorBtn=document.getElementById("sensorBtn");
+const alphaEl=document.getElementById("alpha");
+const betaEl=document.getElementById("beta");
+const gammaEl=document.getElementById("gamma");
+
+sensorBtn.addEventListener("click",async()=>{
+  try{
+    if(typeof DeviceOrientationEvent==="undefined"){
+      alert("此裝置不支援感測器");
+      return;
+    }
+
+    if(typeof DeviceOrientationEvent.requestPermission==="function"){
+      const res=await DeviceOrientationEvent.requestPermission();
+      if(res!=="granted"){
+        alert("未授權感測器");
+        return;
+      }
+    }
+
+    window.addEventListener("deviceorientation",e=>{
+      alphaEl.textContent=e.alpha?.toFixed(2) ?? "-";
+      betaEl.textContent=e.beta?.toFixed(2) ?? "-";
+      gammaEl.textContent=e.gamma?.toFixed(2) ?? "-";
+    });
+
+    sensorBtn.disabled=true;
+    sensorBtn.textContent="感測器已啟動";
+
+  }catch(err){
+    alert("錯誤："+err);
+  }
+});

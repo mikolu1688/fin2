@@ -1,31 +1,115 @@
 <!DOCTYPE html>
-<html lang="zh-TW">
+<html lang="zh-Hant">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>行動即時聊天專案</title>
-    <link rel="stylesheet" href="style.css">
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>行動裝置互動期末專案</title>
+
+<style>
+body{
+  font-family:"Microsoft JhengHei",Arial,sans-serif;
+  background:#e0f7fa;
+  padding:20px;
+}
+
+.section{
+  background:#ffffffcc;
+  padding:20px;
+  margin-bottom:20px;
+  border-radius:16px;
+  box-shadow:0 4px 10px rgba(0,0,0,.1);
+}
+
+h2{ margin-top:0; }
+
+/* 聊天 */
+#chat-box{
+  height:260px;
+  border:1px solid #ccc;
+  border-radius:10px;
+  padding:10px;
+  overflow-y:auto;
+  background:#fff;
+  display:flex;
+  flex-direction:column;
+}
+
+.message{
+  max-width:70%;
+  padding:8px 12px;
+  border-radius:20px;
+  margin:6px 0;
+}
+
+.user{
+  background:#00bfa5;
+  color:#fff;
+  align-self:flex-end;
+}
+
+.friend{
+  background:#fbe7c6;
+  align-self:flex-start;
+}
+
+.progress-container{
+  width:100%;
+  height:5px;
+  background:#ccc;
+  border-radius:5px;
+  margin-top:6px;
+  overflow:hidden;
+}
+.progress-bar{
+  height:100%;
+  width:100%;
+  background:#00bfa5;
+}
+
+input,button{
+  padding:10px;
+  font-size:1rem;
+}
+button{
+  border:none;
+  border-radius:10px;
+  background:#00bfa5;
+  color:#fff;
+  cursor:pointer;
+}
+button:disabled{
+  background:#aaa;
+}
+</style>
 </head>
+
 <body>
 
-<header class="hero-section">
-    <h1>行動即時聊天網站</h1>
-    <p>💬 與對方即時互動，支援已讀與自動回傳定位</p>
-</header>
+<!-- 聊天功能 -->
+<section class="section">
+  <h2>💬 即時對話系統</h2>
 
-<!-- 即時聊天 -->
-<section id="chat-section" class="section">
-    <h2>💬 即時訊息聊天</h2>
-    <div id="chat-box"></div>
-    <form id="chat-form">
-        <input type="text" id="chat-input" placeholder="輸入訊息..." required>
-        <button type="submit">送出</button>
-    </form>
+  <div id="chat-box"></div>
+
+  <form id="chat-form">
+    <input id="chat-input" placeholder="輸入訊息…" required>
+    <button type="submit">送出</button>
+  </form>
 </section>
 
-<footer>
-    <p>&copy; 2025 即時聊天專案</p>
-</footer>
+<!-- 行動裝置感測器 -->
+<section class="section">
+  <h2>📱 行動裝置感測器（DeviceOrientation）</h2>
+  <p>※ 僅支援手機 / 平板</p>
+
+  <button id="sensorBtn">啟用感測器</button>
+
+  <div id="values" style="margin-top:15px;font-size:1.1rem;">
+    <p>Alpha（Z 軸）：<span id="alpha">-</span></p>
+    <p>Beta（X 軸）：<span id="beta">-</span></p>
+    <p>Gamma（Y 軸）：<span id="gamma">-</span></p>
+  </div>
+</section>
 
 <script src="script.js"></script>
 </body>
